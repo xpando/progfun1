@@ -39,9 +39,9 @@ object RecFun extends RecFunInterface {
    * Exercise 3
    */
   def countChange(money: Int, coins: List[Int]): Int = (money, coins) match {
-    case (_, Nil) => 0
-    case (m, _) if m < 0 => 0
-    case (0, _) => 1
-    case (m, c :: r) => countChange(m - c, coins) + countChange(m, r)
+    case (_, Nil) => 0         // Can't make change with no coins
+    case (m, _) if m < 0 => 0  // Can't make change for negative money (likely overshot with recusive call)
+    case (0, _) => 1           // Terminal case. Recursive calls up to hear represent one of the ways to make change
+    case (m, c :: r) => countChange(m - c, coins) + countChange(m, r) // sum all the ways with the current coin and all the ways with only the other coins
   }
 }

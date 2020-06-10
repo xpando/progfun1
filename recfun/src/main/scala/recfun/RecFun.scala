@@ -16,9 +16,12 @@ object RecFun extends RecFunInterface {
   /**
    * Exercise 1
    */
-  def pascal(c: Int, r: Int): Int =
+  def pascal(c: Int, r: Int): Int = {
+    require(c >= 0, "Invalid column index")
+    require(r >= 0, "Invalid row index")
     if (c == 0 || c == r) 1
     else pascal(c - 1, r - 1) + pascal(c, r - 1)
+  }
 
   /**
    * Exercise 2
@@ -39,9 +42,13 @@ object RecFun extends RecFunInterface {
    * Exercise 3
    */
   def countChange(money: Int, coins: List[Int]): Int = (money, coins) match {
-    case (_, Nil) => 0         // Can't make change with no coins
-    case (m, _) if m < 0 => 0  // Can't make change for negative money (likely overshot with recusive call)
-    case (0, _) => 1           // Terminal case. Recursive calls up to hear represent one of the ways to make change
-    case (m, c :: r) => countChange(m - c, coins) + countChange(m, r) // sum all the ways with the current coin and all the ways with only the other coins
+    // No remaining money to be made so we have discovered 1 way
+    case (0, _) => 1
+
+    // No way to make non-zero money with no coins
+    case (m, c) if m < 0 || c == Nil => 0
+
+    // Sum all the ways with the first coin and all the ways with only the other coins
+    case (m, c :: r) => countChange(m - c, coins) + countChange(m, r)
   }
 }

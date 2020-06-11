@@ -38,6 +38,8 @@ class FunSetSuite {
     val s1 = singletonSet(1)
     val s2 = singletonSet(2)
     val s3 = singletonSet(3)
+
+    val s4 = union(s1, union(s2, s3))
   }
 
   /**
@@ -62,6 +64,12 @@ class FunSetSuite {
     }
   }
 
+  @Test def `singleton set does not contain two`: Unit = {
+    new TestSets {
+      assert(!contains(s1, 2))
+    }
+  }
+
   @Test def `union contains all elements of each set`: Unit = {
     new TestSets {
       val s = union(s1, s2)
@@ -71,20 +79,73 @@ class FunSetSuite {
     }
   }
 
-  @Test def `forall: all bounded integers within s satisfy p`: Unit = {
+  @Test def `intersect contains only elements in both sets`: Unit = {
     new TestSets {
-      val s = union(union(s1, s2), s3)
-      assert(FunSets.forall(s, i => i < 10), "All satisfied")
-      assert(!FunSets.forall(s, i => i == 2), "Not all satisfied")
+      // s4 = [1,2,3]
+      val s = intersect(s4, s1)
+      assert(contains(s, 1), "Intersect 1")
+      assert(!contains(s, 2), "Intersect 2")
+      assert(!contains(s, 3), "Intersect 3")
     }
   }
 
-  @Test def `exists: at least one bounded integer within s satisfies p`: Unit = {
+  @Test def `diff contains difference of two sets`: Unit = {
     new TestSets {
-      val s = union(union(s1, s2), s3)
-      assert(FunSets.exists(s, i => i < 10))
-      assert(FunSets.exists(s, i => i == 2))
-      assert(!FunSets.exists(s, i => i > 10))
+      // s4 = [1,2,3]
+      val s = diff(s4, s1)
+      assert(!contains(s, 1), "Diff 1")
+      assert(contains(s, 2), "Diff 2")
+      assert(contains(s, 3), "Diff 3")
+    }
+  }
+
+  @Test def `filter contains elements of first set that satisfy condition`: Unit = {
+    new TestSets {
+      // s4 = [1,2,3]
+      val s = filter(s4, (x: Int) => x != 1)
+      assert(!contains(s, 1), "Filter 1")
+      assert(contains(s, 2), "Filter 2")
+      assert(contains(s, 3), "Filter 3")
+      assert(!contains(s, -1), "Filter 4")
+    }
+  }
+
+  @Test def `forall evaluates correctly`: Unit = {
+    new TestSets {
+      // s4 = [1,2,3]
+      assert(forall(s4, (x: Int) => x > 0), "forall x > 0")
+      assert(forall(union(s4, singletonSet(-bound-1)), (x: Int) => x > 0), "forall x > 0 with out of bounds element -bound-1")
+      assert(!forall(s4, (x: Int) => x < 0), "!forall x < 0")
+      assert(!forall(union(s4, singletonSet(bound+1)), (x: Int) => x < 0), "!forall x < 0 with out of bounds element bound+1")
+      assert(!forall(s4, (x: Int) => x > 2), "!forall x > 2")
+    }
+  }
+
+  // this test is using my initial attempt at implementing exists, doesn't use forall
+  @Test def `exists evaluates correctly`: Unit = {
+    new TestSets {
+      // s4 = [1,2,3]
+      assert(exists(s4, (x: Int) => x > 0), "exists x > 0")
+      assert(exists(s4, (x: Int) => x > 2), "exists x > 2")
+      assert(!exists(singletonSet(bound+1), (x: Int) => x > 0), "!exists x > 0 with out of bounds element bound+1")
+      assert(!exists(s4, (x: Int) => x < 0), "!exists x < 0")
+      assert(!exists(union(s4, singletonSet(-bound-1)), (x: Int) => x < 0), "!exists x < 0 with out of bounds element -bound-1")
+    }
+  }
+
+  @Test def `map evaluates correctly`: Unit = {
+    new TestSets {
+      // s4 = [1,2,3]
+      // mapSet = [1,4,9]
+      val mapSet = map(s4, x => scala.math.pow(x,2).toInt)
+
+      assert(contains(mapSet, 1), "Map 1")
+      assert(!contains(mapSet, 2), "Map 2")
+      assert(contains(mapSet, 4), "Map 3")
+      assert(contains(mapSet, 9), "Map 4")
+      assert(!contains(mapSet, 10), "Map 5")
+      assert(!contains(mapSet, 0), "Map 6")
+      assert(!contains(mapSet, -1), "Map 7")
     }
   }
 
